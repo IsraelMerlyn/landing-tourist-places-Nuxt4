@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   },
   // Configuración de Imágenes
   image: {
+    provider: 'vercel',
     // Permitir optimizar imágenes de estos dominios
     domains: [
       'images.unsplash.com',

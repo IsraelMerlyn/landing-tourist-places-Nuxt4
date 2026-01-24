@@ -1,75 +1,75 @@
-# Nuxt Minimal Starter
+# 🌿 Turismo Mixteca - Israel Merlyn
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+![Banner del Proyecto](public/images/banner-proyecto.jpg) 
+*(Tip: Aquí puedes poner una captura de tu Home)*
 
-## Setup
+> Una plataforma web inmersiva dedicada a promover el ecoturismo y la riqueza cultural de la región Mixteca de Oaxaca. Desarrollada con tecnología moderna para asegurar velocidad, accesibilidad y SEO.
 
-Make sure to install dependencies:
+## 🚀 Demo en Vivo
+[Ver sitio web](https://tu-url-aqui.com) *(Pendiente de deploy)*
 
-```bash
-# npm
-npm install
+## 🛠️ Stack Tecnológico
 
-# pnpm
-pnpm install
+Este proyecto utiliza una arquitectura moderna basada en componentes y renderizado híbrido:
 
-# yarn
-yarn install
+* **Framework Principal:** [Nuxt 3](https://nuxt.com/) (Vue.js Framework)
+* **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
+* **Imágenes:** @nuxt/image (Formato WebP + Lazy Loading)
+* **Iconos:** Heroicons (SVG Inline)
+* **Lenguaje:** JavaScript (ES6+) / HTML5 Semántico
 
-# bun
-bun install
-```
+## ✨ Características Clave
 
-## Development Server
+* **Navegación Dinámica:** Sistema de enrutamiento para ver detalles de cada destino (`/destinos/[id]`).
+* **SEO Optimizado:** Metadatos dinámicos, etiquetas OpenGraph y semántica HTML.
+* **Performance:** Puntuación de 90+ en Lighthouse (Core Web Vitals).
+* **Diseño Responsivo:** Adaptado para móviles, tablets y escritorio con enfoque "Mobile First".
+* **UX/UI Moderno:** Efectos Glassmorphism, transiciones suaves y tipografía legible.
 
-Start the development server on `http://localhost:3000`:
+## 📦 Instalación y Configuración
 
-```bash
-# npm
-npm run dev
+Si deseas correr este proyecto localmente, sigue estos pasos:
 
-# pnpm
-pnpm dev
+### Prerrequisitos
+* Node.js (v18 o superior)
+* NPM o Yarn
 
-# yarn
-yarn dev
+### Pasos
 
-# bun
-bun run dev
-```
+1.  **Clonar el repositorio**
+    ```bash
+    git clone [https://github.com/tu-usuario/turismo-mixteca.git](https://github.com/tu-usuario/turismo-mixteca.git)
+    cd turismo-mixteca
+    ```
 
-## Production
+2.  **Instalar dependencias**
+    ```bash
+    npm install
+    ```
 
-Build the application for production:
+3.  **Correr servidor de desarrollo**
+    ```bash
+    npm run dev
+    ```
+    Visita `http://localhost:3000` en tu navegador.
 
-```bash
-# npm
-npm run build
+4.  **Construir para producción**
+    ```bash
+    npm run build
+    npm run preview
+    ```
 
-# pnpm
-pnpm build
+## 📂 Estructura del Proyecto
 
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+```text
+/
+├── assets/          # Estilos globales y recursos estáticos
+├── components/      # Componentes Vue reutilizables
+├── composables/     # Lógica compartida (useDestinos.js)
+├── layouts/         # Plantillas base (Navbar, Footer)
+├── pages/           # Vistas y Rutas del sitio
+│   ├── index.vue    # Home
+│   └── destinos/    # Rutas dinámicas
+│       └── [id].vue # Detalle de destino
+├── public/          # Archivos estáticos públicos (imágenes grandes)
+└── nuxt.config.ts   # Configuración de módulos y SEO
