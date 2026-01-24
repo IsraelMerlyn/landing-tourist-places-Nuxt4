@@ -13,9 +13,11 @@ useHead({
   ]
 })
 
-// ... (Tu data original se mantiene igual) ...
-const { destinos } = useDestinos()
-
+//consumimos la API de destinos localmente
+const { data: destinos, pending, error } = await useFetch('/api/destinos')
+if (error.value) {
+  console.error('Error cargando destinos:', error.value)
+}
 const carouselImages = [
   'https://pbs.twimg.com/media/CXMShmQUoAALgZX.jpg',
   'https://mxc.com.mx/wp-content/uploads/2024/08/santiago-yosondua-cascada-min.png',
@@ -31,14 +33,18 @@ const selectedCategory = ref('Todos');
 const categories = ['Todos', 'Naturaleza', 'Cultura', 'Aventura', 'Gastronomía'];
 
 const filteredDestinos = computed(() => {
-  return destinos.filter(destino => {
+  
+  const listaDestinos = destinos.value || [] 
+
+  return listaDestinos.filter(destino => {
+    // Tu lógica de filtro sigue igual aquí adentro...
     const matchCategory = selectedCategory.value === 'Todos' || destino.categoria === selectedCategory.value;
     const query = searchQuery.value.toLowerCase();
-    const matchSearch = destino.titulo.toLowerCase().includes(query) ||
-      destino.descripcionCorto.toLowerCase().includes(query);
+    const matchSearch = destino.titulo.toLowerCase().includes(query) || 
+                        destino.descripcionCorto.toLowerCase().includes(query);
     return matchCategory && matchSearch;
   });
-});
+  });
 </script>
 
 <template>
