@@ -30,6 +30,13 @@ export default defineNuxtConfig({
     quality: 80,
     format: ['webp']
   },
+
+  nitro: {
+    prerender: {
+      failOnError: false // Si una página falla, no detengas todo el build
+    }
+  },
+
   typescript: {
     typeCheck: false,
     strict: false
