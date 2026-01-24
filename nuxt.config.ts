@@ -29,5 +29,9 @@ export default defineNuxtConfig({
     // Calidad por defecto
     quality: 80,
     format: ['webp']
+  },
+  typescript: {
+    typeCheck: false,
+    strict: false
   }
 })
