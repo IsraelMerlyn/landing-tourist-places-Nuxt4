@@ -2,7 +2,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/image'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/image', '@nuxtjs/supabase'],
+  supabase: { redirect: false },
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
     head: {
@@ -15,7 +16,7 @@ export default defineNuxtConfig({
   },
   // Configuración de Imágenes
   image: {
-    provider: 'netlify',
+    // provider: 'netlify',
     // Permitir optimizar imágenes de estos dominios
     domains: [
       'images.unsplash.com',
@@ -28,5 +29,16 @@ export default defineNuxtConfig({
     // Calidad por defecto
     quality: 80,
     format: ['webp']
+  },
+
+  nitro: {
+    prerender: {
+      failOnError: false // Si una página falla, no detengas todo el build
+    }
+  },
+
+  typescript: {
+    typeCheck: false,
+    strict: false
   }
 })

@@ -1,0 +1,41 @@
+name: CI Quality Check
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Bajar código
+            - name: Checkout del código
+              uses: actions/checkout@v4
+
+            # 2. Instalar Node.js (¡Actualizado a v24 para coincidir contigo!)
+            - name: Instalar Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "24"
+                  cache: "npm"
+
+            # 3. Instalar dependencias
+            # Usamos 'install' en lugar de 'ci' para que regenere el lockfile si es necesario
+            # y no falle por diferencias de versión.
+            - name: Instalar dependencias
+              run: npm install
+
+            # 4. Tests
+            - name: Ejecutar Tests Unitarios
+              run: npx vitest run
+
+            # 5. Build
+            - name: Verificar Build
+              run: npm run build
+              env:
+                  # Secretos necesarios para que Nuxt/Supabase no fallen
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
