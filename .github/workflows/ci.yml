@@ -1,0 +1,40 @@
+name: CI Quality Check
+
+# ¿Cuándo se activa el robot?
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest # Usamos una máquina virtual Linux
+
+        steps:
+            # 1. Descargar tu código
+            - name: Checkout del código
+              uses: actions/checkout@v4
+
+            # 2. Instalar Node.js
+            - name: Instalar Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  cache: "npm"
+
+            # 3. Instalar dependencias
+            - name: Instalar dependencias
+              run: npm ci
+
+            # 4. Correr los Tests (Vitest)
+            - name: Ejecutar Tests Unitarios
+              run: npx vitest run # 'run' es importante para que no se quede esperando (watch mode)
+
+            # 5. (Opcional) Verificar que el proyecto construye bien
+            - name: Verificar Build
+              run: npm run build
+              env:
+                  # Necesitamos las variables aunque sean falsas para que el build no falle
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
