@@ -14,40 +14,7 @@ useHead({
 })
 
 // ... (Tu data original se mantiene igual) ...
-const destinos = [
-  {
-    id: 1,
-    titulo: 'Cascada de Yosonduá',
-    descripcionCorto: 'Una impresionante caída de agua color esmeralda en la Mixteca.',
-    imagen: 'https://mxc.com.mx/wp-content/uploads/2024/08/santiago-yosondua-cascada-min.png',
-    precio: 'Entrada Libre',
-    categoria: 'Naturaleza'
-  },
-  {
-    id: 2,
-    titulo: 'Cueva Mágica (Ndúúva Mulinú)',
-    descripcionCorto: 'Naturaleza, senderismo y misticismo en San Pedro Molinos.',
-    imagen: 'https://pbs.twimg.com/media/CXMShmQUoAALgZX.jpg',
-    precio: 'Entrada Libre',
-    categoria: 'Aventura'
-  },
-  {
-    id: 3,
-    titulo: 'Ex-Convento de Santo Domingo',
-    descripcionCorto: 'Joya arquitectónica del siglo XVI en Yanhuitlán.',
-    imagen: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Templo_y_Ex-convento_de_Santo_Domingo_Yanhuitl%C3%A1n.jpg/1200px-Templo_y_Ex-convento_de_Santo_Domingo_Yanhuitl%C3%A1n.jpg',
-    precio: '$85 MXN',
-    categoria: 'Cultura'
-  },
-  {
-    id: 4,
-    titulo: 'Mercado de Tlaxiaco',
-    descripcionCorto: 'Sabores auténticos, barbacoa y pan tradicional.',
-    imagen: 'https://imparcialoaxaca.mx/wp-content/uploads/2022/10/FOTOS-Nota-Tlaxiaco.jpg',
-    precio: 'Consumo',
-    categoria: 'Gastronomía'
-  }
-]
+const { destinos } = useDestinos()
 
 const carouselImages = [
   'https://pbs.twimg.com/media/CXMShmQUoAALgZX.jpg',

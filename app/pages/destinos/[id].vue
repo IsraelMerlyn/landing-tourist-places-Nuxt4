@@ -2,13 +2,44 @@
 const route = useRoute()
 const { destinos } = useDestinos()
 
-// 1. Obtener ID y buscar
-const idActual = Number(route.params.id)
-const destino = destinos.find(d => d.id === idActual)
+console.log('--- INICIO DEL DIAGNÓSTICO ---')
 
-// 2. Manejo de error 404
+// 1. Verificamos qué ID llega de la URL
+const idUrl = route.params.id
+console.log('1. ID en la URL:', idUrl, '(Tipo:', typeof idUrl, ')')
+
+// 2. Verificamos si la lista de destinos llegó bien
+console.log('2. Lista de destinos:', destinos)
+
+if (!destinos || destinos.length === 0) {
+  console.error('❌ ERROR CRÍTICO: La lista de destinos está vacía o indefinida.')
+} else {
+  console.log('✅ La lista tiene datos. Primer ID disponible:', destinos[0].id, '(Tipo:', typeof destinos[0].id, ')')
+}
+
+// 3. Convertimos a número (asegurándonos)
+const idActual = Number(idUrl)
+
+// 4. Intentamos buscar
+const destino = destinos.find(d => d.id === idActual)
+console.log('3. Resultado de la búsqueda:', destino)
+
+console.log('--- FIN DEL DIAGNÓSTICO ---')
+
+// Manejo de error original
 if (!destino) {
   throw createError({ statusCode: 404, statusMessage: 'Destino no encontrado', fatal: true })
+}
+
+// SEO
+if (destino) {
+  useHead({
+    title: `${destino.titulo} | Turismo Mixteca`,
+    meta: [
+      { name: 'description', content: destino.descripcionCorto },
+      { property: 'og:image', content: destino.imagen }
+    ]
+  })
 }
 
 // 3. SEO Dinámico: El título de la pestaña será el nombre del lugar

@@ -31,7 +31,7 @@ export const useDestinos = () => {
          'https://pbs.twimg.com/media/CXMShmQUoAALgZX.jpg'
       ]
     },
-    // ... puedes agregar los demás con este formato
+  
   ]
 
   return {
