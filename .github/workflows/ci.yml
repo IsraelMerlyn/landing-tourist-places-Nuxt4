@@ -1,6 +1,5 @@
-name: CI check Landing Page
+name: CI Quality Check
 
-# ¿Cuándo se activa el robot?
 on:
     push:
         branches: [main, develop]
@@ -9,32 +8,32 @@ on:
 
 jobs:
     build-and-test:
-        runs-on: ubuntu-latest # Usamos una máquina virtual Linux
+        runs-on: ubuntu-latest
 
         steps:
             # 1. Descargar tu código
             - name: Checkout del código
               uses: actions/checkout@v4
 
-            # 2. Instalar Node.js
+            # 2. Instalar Node.js (Actualizado a v20 para compatibilidad moderna)
             - name: Instalar Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "24"
+                  node-version: "20"
                   cache: "npm"
 
-            # 3. Instalar dependencias
+            # 3. Instalar dependencias (CAMBIO CRÍTICO: Usamos 'install' en vez de 'ci')
             - name: Instalar dependencias
               run: npm install
 
-            # 4. Correr los Tests (Vitest)
+            # 4. Correr los Tests
             - name: Ejecutar Tests Unitarios
-              run: npx vitest run # 'run' es importante para que no se quede esperando (watch mode)
+              run: npx vitest run
 
-            # 5. (Opcional) Verificar que el proyecto construye bien
+            # 5. Verificar Build
             - name: Verificar Build
               run: npm run build
               env:
-                  # Necesitamos las variables aunque sean falsas para que el build no falle
+                  # Pasamos los secretos para que Supabase no falle
                   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
                   SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
