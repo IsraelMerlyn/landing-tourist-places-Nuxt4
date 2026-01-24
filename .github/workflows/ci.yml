@@ -1,4 +1,4 @@
-name: CI Quality Check
+name: CI check Landing Page
 
 # ¿Cuándo se activa el robot?
 on:
@@ -20,12 +20,12 @@ jobs:
             - name: Instalar Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "18"
+                  node-version: "24"
                   cache: "npm"
 
             # 3. Instalar dependencias
             - name: Instalar dependencias
-              run: npm ci
+              run: npm install
 
             # 4. Correr los Tests (Vitest)
             - name: Ejecutar Tests Unitarios
