@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Swal from 'sweetalert2'
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const router = useRouter()
@@ -84,26 +85,53 @@ const guardarDestino = async () => {
   saving.value = false
 
   if (error) {
-    alert('Error al guardar: ' + error.message)
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'No se pudo guardar: ' + error.message,
+    })
   } else {
-    // Éxito: Cerramos modal, limpiamos form y recargamos lista
     showModal.value = false
     form.value = { titulo: '', descripcion_corto: '', categoria: 'Aventura', precio: '', imagen: '' }
-    fetchDestinos() 
+    fetchDestinos()
+    
+    // Toast (Alerta pequeña en la esquina)
+    Swal.fire({
+      icon: 'success',
+      title: '¡Destino guardado!',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    })
   }
 }
 const eliminarDestino = async (id: number) => {
-  if (!confirm('¿Estás seguro de borrar este destino?')) return
+  const result = await Swal.fire({
+    title: '¿Estás seguro?',
+    text: "No podrás revertir esta acción",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#10b981', // Emerald-500
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, borrarlo',
+    cancelButtonText: 'Cancelar'
+  })
 
-  const { error } = await client
-    .from('destinos')
-    .delete()
-    .eq('id', id)
+  if (result.isConfirmed) {
+    const { error } = await client.from('destinos').delete().eq('id', id)
 
-  if (error) {
-    alert('Error al borrar: ' + error.message)
-  } else {
-    fetchDestinos() // Recargamos la lista
+    if (error) {
+      Swal.fire('Error', error.message, 'error')
+    } else {
+      fetchDestinos()
+      Swal.fire(
+        '¡Borrado!',
+        'El destino ha sido eliminado.',
+        'success'
+      )
+    }
   }
 }
 // Ejecutar la carga inicial
