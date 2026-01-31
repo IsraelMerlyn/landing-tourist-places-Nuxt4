@@ -19,6 +19,11 @@ export default defineNuxtConfig({
       ]
     }
   },
+  routeRules: {
+    // Esto le dice a Nuxt: "Todo lo que esté en /admin, cárgalo SOLO en el navegador"
+    '/admin/**': { ssr: false }
+  },
+
   // Configuración de Imágenes
   image: {
     // provider: 'netlify',
@@ -46,4 +51,5 @@ export default defineNuxtConfig({
     typeCheck: false,
     strict: false
   }
+
 })

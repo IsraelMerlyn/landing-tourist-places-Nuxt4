@@ -1,80 +1,37 @@
 <script setup lang="ts">
 import Swal from 'sweetalert2'
-const client = useSupabaseClient()
-const user = useSupabaseUser()
-const router = useRouter()
 
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const errorMsg = ref('')
-const showPassword = ref(false) // Estado para el ojito
-const showModal = ref(false) // Controla si se ve la ventana emergente
-const saving = ref(false)
 definePageMeta({
-  middleware: 'auth' // Nombre del archivo que creamos en el paso 1
+  middleware: 'auth'
 })
-// Redirigir si ya hay sesión
-watchEffect(() => {
-  if (user.value) {
-    router.push('/admin/dashboard')
-  }
-})
-const logout = async () => {
-  await client.auth.signOut()
-  router.push('/login')
-}
-const handleLogin = async () => {
-  loading.value = true
-  errorMsg.value = ''
-  
-  const { error } = await client.auth.signInWithPassword({
-    email: email.value,
-    password: password.value
-  })
 
-  if (error) {
-    loading.value = false
-    // Mensaje amigable dependiendo del error
-    if (error.message.includes('Invalid login credentials')) {
-      errorMsg.value = 'Correo o contraseña incorrectos.'
-    } else if (error.message.includes('Email not confirmed')) {
-      errorMsg.value = 'Debes confirmar tu correo o desactivar la confirmación en Supabase.'
-    } else {
-      errorMsg.value = error.message
-    }
-  }
-}
-const destinos = ref([])
+const router = useRouter()
+const client = useSupabaseClient() // Solo para logout (auth es otro tema)
 
-const fetchDestinos = async () => {
-  loading.value = true
-  try {
-    // Usamos $fetch para llamar a tu backend
-    const data = await $fetch('/api/destinos')
-    destinos.value = data
-    console.log('✅ Datos cargados vía API:', data)
-  } catch (error) {
-    console.error('❌ Error cargando API:', error)
-  } finally {
-    loading.value = false
-  }
-}
-// Datos del Formulario
+// 1. INYECTAMOS NUESTRO COMPOSABLE (El Cocinero) 👨‍🍳
+// Nuxt importa automáticamente 'useDestinos', no necesitas importarlo manual.
+const { destinos, loading, fetchDestinos, crearDestino, eliminarDestino } = useDestinos()
+
+// Estado local solo para UI (Ventanas, formularios)
+const showModal = ref(false)
+const saving = ref(false)
+
 const form = ref({
   titulo: '',
-  descripcion_corto: '', // Ojo: Debe coincidir con tu columna en DB
-  categoria: 'Aventura', // Valor por defecto
+  descripcion_corto: '',
+  categoria: 'Aventura',
   precio: '',
-  imagen: '' // Por ahora pegaremos URL (Luego veremos Storage)
+  imagen: ''
 })
-const guardarDestino = async () => {
+
+// --- LÓGICA DE UI (El Mesero coordinando) ---
+
+// Manejar el Guardado
+const handleGuardar = async () => {
   saving.value = true
-  
-  // Insertamos directo a Supabase (Admin tiene permiso ALL)
-  const { error } = await client
-    .from('destinos')
-    .insert({
+  try {
+    // El componente solo dice "Cocinero, crea esto". No sabe de SQL ni APIs.
+    await crearDestino({
       titulo: form.value.titulo,
       descripcion_corto: form.value.descripcion_corto,
       categoria: form.value.categoria,
@@ -82,65 +39,68 @@ const guardarDestino = async () => {
       imagen: form.value.imagen
     })
 
-  saving.value = false
-
-  if (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: 'No se pudo guardar: ' + error.message,
-    })
-  } else {
+    // Si no hubo error (catch), mostramos éxito
     showModal.value = false
     form.value = { titulo: '', descripcion_corto: '', categoria: 'Aventura', precio: '', imagen: '' }
-    fetchDestinos()
     
-    // Toast (Alerta pequeña en la esquina)
     Swal.fire({
       icon: 'success',
-      title: '¡Destino guardado!',
+      title: '¡Guardado!',
       toast: true,
       position: 'top-end',
       showConfirmButton: false,
       timer: 3000,
       timerProgressBar: true
     })
+
+  } catch (error: any) {
+    // El componente decide cómo mostrar el error (SweetAlert)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.message
+    })
+  } finally {
+    saving.value = false
   }
 }
-const eliminarDestino = async (id: number) => {
+
+// Manejar el Borrado
+const handleEliminar = async (id: number) => {
   const result = await Swal.fire({
-    title: '¿Estás seguro?',
-    text: "No podrás revertir esta acción",
+    title: '¿Borrar destino?',
+    text: "No hay vuelta atrás",
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#10b981', // Emerald-500
+    confirmButtonColor: '#10b981',
     cancelButtonColor: '#d33',
-    confirmButtonText: 'Sí, borrarlo',
+    confirmButtonText: 'Sí, borrar',
     cancelButtonText: 'Cancelar'
   })
 
   if (result.isConfirmed) {
-    const { error } = await client.from('destinos').delete().eq('id', id)
-
-    if (error) {
+    try {
+      await eliminarDestino(id) // Llamada limpia al composable
+      Swal.fire('¡Borrado!', 'Destino eliminado.', 'success')
+    } catch (error: any) {
       Swal.fire('Error', error.message, 'error')
-    } else {
-      fetchDestinos()
-      Swal.fire(
-        '¡Borrado!',
-        'El destino ha sido eliminado.',
-        'success'
-      )
     }
   }
 }
-// Ejecutar la carga inicial
+
+const logout = async () => {
+  await client.auth.signOut()
+  router.push('/login')
+}
+
+// Carga inicial
 onMounted(() => {
   fetchDestinos()
 })
 </script>
+
 <template>
-  <div class="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans relative">
+    <div class="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans relative">
     
     <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 mb-10">
       <div>
@@ -208,7 +168,7 @@ onMounted(() => {
                 <td class="px-6 py-4 font-medium text-gray-900">{{ destino.precio }}</td>
                 <td class="px-6 py-4 text-right">
                   <button 
-                    @click="eliminarDestino(destino.id)"
+                    @click="handleEliminar(destino.id)" 
                     class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
                     title="Eliminar"
                   >
@@ -225,7 +185,6 @@ onMounted(() => {
     </main>
 
     <div v-if="showModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 flex items-center justify-center p-4">
-      
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
         
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -233,7 +192,7 @@ onMounted(() => {
           <button @click="showModal = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
 
-        <form @submit.prevent="guardarDestino" class="p-6 space-y-4">
+        <form @submit.prevent="handleGuardar" class="p-6 space-y-4">
           
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Título</label>
@@ -281,6 +240,6 @@ onMounted(() => {
         </form>
       </div>
     </div>
-
+    
   </div>
 </template>
