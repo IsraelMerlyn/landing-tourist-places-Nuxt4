@@ -1,5 +1,5 @@
 // @ts-nocheck
-export const useDestinos = () => {
+export const useMisDestinos = () => {
     // 1. ESTADO COMPARTIDO (Sin tipos explícitos)
     const destinos = useState('destinos', () => [])
     const loading = useState('loading_destinos', () => false)
@@ -54,12 +54,30 @@ export const useDestinos = () => {
             destinos.value = destinos.value.filter(d => d.id !== id)
         }
     }
+    const actualizarDestino = async (id, datosActualizados) => {
+        // Validamos
+        if (!datosActualizados.titulo || !datosActualizados.imagen) {
+            throw new Error("El título y la imagen son obligatorios")
+        }
+
+        // Enviamos a Supabase
+        const { error } = await client
+            .from('destinos')
+            .update(datosActualizados) // Los nuevos datos
+            .eq('id', id)              // Cual fila editar (WHERE id = X)
+
+        if (error) throw error
+
+        // Recargamos para ver cambios
+        await fetchDestinos()
+    }
 
     return {
         destinos,
         loading,
         fetchDestinos,
         crearDestino,
-        eliminarDestino
+        eliminarDestino,
+        actualizarDestino
     }
 }
