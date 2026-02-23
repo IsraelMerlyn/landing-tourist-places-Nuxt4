@@ -2,105 +2,126 @@
 import Swal from 'sweetalert2'
 import { useMisDestinos } from '~/composable/useDestinos'
 
-
 definePageMeta({
   middleware: 'auth'
 })
-console.log('✅ Dashboard montado. Iniciando...')
+
 const router = useRouter()
 const client = useSupabaseClient()
-const herramientas = useMisDestinos()
-console.log('🛠️ Herramientas detectadas:', Object.keys(herramientas || {}))
-// 1. IMPORTAMOS TODO DEL COMPOSABLE (incluyendo actualizarDestino)
+
 const { 
-  destinos, 
-  loading, 
-  fetchDestinos, 
-  crearDestino, 
-  eliminarDestino, 
-  actualizarDestino 
+  destinos, loading, fetchDestinos, 
+  crearDestino, eliminarDestino, actualizarDestino, subirImagen 
 } = useMisDestinos()
 
-// Estado local
 const showModal = ref(false)
 const saving = ref(false)
 const isEditing = ref(false)
 const editId = ref<number | null>(null)
+
+// 👇 AHORA ES UN ARREGLO DE ARCHIVOS
+const archivosSeleccionados = ref<File[]>([])
 
 const form = ref({
   titulo: '',
   descripcion_corto: '',
   categoria: 'Aventura',
   precio: '',
-  imagen: ''
+  imagen: '',
+  galeria: [] as string[] // Agregamos la galería al formulario
 })
 
-// --- ESTA ES LA FUNCIÓN QUE TE FALTABA ---
+// 👇 NUEVA LÓGICA: CAPTURAR Y LIMITAR A 5 IMÁGENES
+const handleFileChange = (event: any) => {
+  const files = Array.from(event.target.files) as File[]
+  
+  if (files.length > 5) {
+    Swal.fire('Límite excedido', 'Solo puedes subir un máximo de 5 imágenes.', 'warning')
+    event.target.value = '' // Limpiamos el input
+    archivosSeleccionados.value = []
+    return
+  }
+  
+  archivosSeleccionados.value = files
+}
+
 const abrirModal = (destino: any = null) => {
+  archivosSeleccionados.value = [] // Limpiar archivos
+  
   if (destino) {
-    // Modo Edición: Llenamos el formulario
     isEditing.value = true
     editId.value = destino.id
     form.value = {
       titulo: destino.titulo,
-      descripcion_corto: destino.descripcionCorto, 
+      descripcion_corto: destino.descripcionCorto || destino.descripcion_corto, 
       categoria: destino.categoria,
       precio: destino.precio,
-      imagen: destino.imagen
+      imagen: destino.imagen,
+      galeria: destino.galeria || [] // Cargamos la galería si existe
     }
   } else {
-    // Modo Crear: Limpiamos el formulario
     isEditing.value = false
     editId.value = null
-    form.value = { titulo: '', descripcion_corto: '', categoria: 'Aventura', precio: '', imagen: '' }
+    form.value = { titulo: '', descripcion_corto: '', categoria: 'Aventura', precio: '', imagen: '', galeria: [] }
   }
   showModal.value = true
 }
 
-// Guardar o Actualizar
+// 👇 LA MAGIA DE SUBIR MÚLTIPLES IMÁGENES AL MISMO TIEMPO
 const handleGuardar = async () => {
   saving.value = true
   try {
+    let urlImagenFinal = form.value.imagen 
+    let urlsGaleria = form.value.galeria || []
+
+    // Si hay archivos nuevos seleccionados...
+    if (archivosSeleccionados.value.length > 0) {
+      // Creamos un "ejército" de promesas para subir todas a la vez
+      const promesasDeSubida = archivosSeleccionados.value.map(file => subirImagen(file))
+      
+      // Esperamos a que todas terminen y guardamos sus links
+      const nuevasUrls = await Promise.all(promesasDeSubida)
+      
+      // La primera imagen será la portada, el resto (o todas) a la galería
+      urlImagenFinal = nuevasUrls[0]
+      urlsGaleria = nuevasUrls
+    }
+
+    if (!form.value.titulo) throw new Error("Falta el título")
+    if (!urlImagenFinal) throw new Error("Debes subir al menos 1 imagen")
+
+    const datosGuardar = {
+      titulo: form.value.titulo,
+      descripcion_corto: form.value.descripcion_corto,
+      categoria: form.value.categoria,
+      precio: form.value.precio,
+      imagen: urlImagenFinal,
+      galeria: urlsGaleria // Guardamos el arreglo de links
+    }
+
     if (isEditing.value && editId.value) {
-      // EDITAR
-      await actualizarDestino(editId.value, {
-        titulo: form.value.titulo,
-        descripcion_corto: form.value.descripcion_corto,
-        categoria: form.value.categoria,
-        precio: form.value.precio,
-        imagen: form.value.imagen
-      })
+      await actualizarDestino(editId.value, datosGuardar)
       Swal.fire('¡Actualizado!', 'Destino modificado correctamente', 'success')
     } else {
-      // CREAR
-      await crearDestino({
-        titulo: form.value.titulo,
-        descripcion_corto: form.value.descripcion_corto,
-        categoria: form.value.categoria,
-        precio: form.value.precio,
-        imagen: form.value.imagen
-      })
+      await crearDestino(datosGuardar)
       Swal.fire({
-        icon: 'success',
-        title: '¡Guardado!',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000
+        icon: 'success', title: '¡Guardado!', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
       })
     }
 
     showModal.value = false
-    fetchDestinos() // Recargar lista por seguridad
+    archivosSeleccionados.value = []
+    fetchDestinos()
 
   } catch (error: any) {
+    console.error(error)
     Swal.fire('Error', error.message, 'error')
   } finally {
     saving.value = false
   }
 }
 
-// Eliminar
+// ... handleEliminar y logout se quedan IGUAL ...
 const handleEliminar = async (id: number) => {
   const result = await Swal.fire({
     title: '¿Borrar destino?',
@@ -132,7 +153,6 @@ onMounted(() => {
   fetchDestinos()
 })
 </script>
-
 <template>
   <div class="min-h-screen bg-slate-50 p-6 lg:p-10 font-sans relative">
     
@@ -241,8 +261,20 @@ onMounted(() => {
           </div>
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">URL de Imagen</label>
-            <input v-model="form.imagen" type="url" required class="w-full rounded-lg border-gray-200 bg-gray-50 p-3 text-sm outline-none" placeholder="https://...">
-            <p class="text-[10px] text-gray-400 mt-1">* Por ahora pega un link de Google Images o Unsplash.</p>
+            <input 
+              type="file" 
+              multiple 
+              accept="image/*" 
+              @change="handleFileChange"
+              class="w-full rounded-lg border border-gray-200 bg-gray-50 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+            >
+            
+            <p v-if="archivosSeleccionados.length > 0" class="text-xs text-emerald-600 font-bold mt-2">
+              📸 {{ archivosSeleccionados.length }} fotos listas para subir.
+            </p>
+            <p v-else-if="isEditing && form.imagen" class="text-[10px] text-gray-400 mt-1">
+              * Ya tiene {{ form.galeria?.length || 1 }} imágenes. Sube nuevas solo si quieres reemplazarlas.
+            </p>
           </div>
           <div class="pt-4 flex justify-end gap-3">
             <button type="button" @click="showModal = false" class="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
