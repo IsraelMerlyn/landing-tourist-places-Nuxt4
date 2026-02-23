@@ -34,7 +34,8 @@ export default defineNuxtConfig({
       'mxc.com.mx',
       'oaxaca.eluniversal.com.mx',
       'upload.wikimedia.org',
-      'imparcialoaxaca.mx'
+      'imparcialoaxaca.mx',
+      'wamizocikyybomawvefk.supabase.co'
     ],
     // Calidad por defecto
     quality: 80,
