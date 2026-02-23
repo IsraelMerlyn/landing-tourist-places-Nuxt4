@@ -6,6 +6,25 @@ export const useMisDestinos = () => {
 
     const client = useSupabaseClient()
 
+    const subirImagen = async (file) => {
+        // 1. Generamos un nombre único para que no se sobreescriban fotos con el mismo nombre
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+
+        // 2. Subimos el archivo al bucket 'destinos-imagenes'
+        const { data, error } = await client.storage
+            .from('destinos-imagenes')
+            .upload(fileName, file)
+
+        if (error) throw new Error("Error al subir la imagen a Supabase: " + error.message)
+
+        // 3. Obtenemos la URL pública para guardarla en la Base de Datos
+        const { data: publicData } = client.storage
+            .from('destinos-imagenes')
+            .getPublicUrl(fileName)
+
+        return publicData.publicUrl
+    }
     // 2. OBTENER DATOS (READ)
     const fetchDestinos = async () => {
         loading.value = true
@@ -78,6 +97,7 @@ export const useMisDestinos = () => {
         fetchDestinos,
         crearDestino,
         eliminarDestino,
-        actualizarDestino
+        actualizarDestino,
+        subirImagen
     }
 }
