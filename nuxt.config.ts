@@ -2,7 +2,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxtjs/tailwindcss', '@nuxt/image', '@nuxtjs/supabase'],
+  // css: ['~/assets/css/main.css'],
+  modules: ['@nuxtjs/tailwindcss', '@nuxt/image', '@nuxtjs/supabase',],
   supabase: { redirect: false },
   app: {
     pageTransition: { name: 'page', mode: 'out-in' },
@@ -12,8 +13,17 @@ export default defineNuxtConfig({
       },
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap' }
+      ]
     }
   },
+  routeRules: {
+    // Esto le dice a Nuxt: "Todo lo que esté en /admin, cárgalo SOLO en el navegador"
+    '/admin/**': { ssr: false }
+  },
+
   // Configuración de Imágenes
   image: {
     // provider: 'netlify',
@@ -41,4 +51,5 @@ export default defineNuxtConfig({
     typeCheck: false,
     strict: false
   }
+
 })
